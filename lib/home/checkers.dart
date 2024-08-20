@@ -36,7 +36,7 @@ bool checkPart(String text) {
 }
 
 bool checkDate(String text) {
-  if (text.toLowerCase().contains('date')) {
+  if (text.toLowerCase().contains('date:-')) {
     return true;
   }
   return false;

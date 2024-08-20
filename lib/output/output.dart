@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:marksheet_scanner/output/widgets/header-text.dart';
 
 class Output extends StatelessWidget {

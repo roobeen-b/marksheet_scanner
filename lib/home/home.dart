@@ -38,14 +38,13 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Center(
-                child: _isLoading && _image == null
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                _isLoading && _image == null
                     ? const CircularProgressIndicator()
                     : _image == null
                         ? const Text('No Image Selected!')
@@ -74,45 +73,44 @@ class _MyHomePageState extends State<MyHomePage> {
                                       label: const Text('Extract Text'))
                             ],
                           ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                      icon: const Icon(Icons.camera_alt),
-                      style: ElevatedButton.styleFrom(
-                          shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0))),
-                          backgroundColor: Colors.red[500],
-                          foregroundColor: Colors.white),
-                      onPressed: () async {
-                        pickImageFromGallery(ImageSource.camera);
-                      },
-                      label: const Text(
-                        'Using Camera',
-                        maxLines: 2,
-                      )),
-                  const SizedBox(
-                    width: 10.0,
-                  ),
-                  ElevatedButton.icon(
-                      icon: const Icon(Icons.photo),
-                      style: ElevatedButton.styleFrom(
-                          shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0))),
-                          backgroundColor: Colors.blue[500],
-                          foregroundColor: Colors.white),
-                      onPressed: () async {
-                        pickImageFromGallery(ImageSource.gallery);
-                      },
-                      label: const Text(
-                        'Pick From Gallery',
-                      )),
-                ],
-              )
-            ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                        icon: const Icon(Icons.camera_alt),
+                        style: ElevatedButton.styleFrom(
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0))),
+                            backgroundColor: Colors.red[500],
+                            foregroundColor: Colors.white),
+                        onPressed: () async {
+                          pickImageFromGallery(ImageSource.camera);
+                        },
+                        label: const Text(
+                          'Using Camera',
+                        )),
+                    const SizedBox(
+                      width: 10.0,
+                    ),
+                    ElevatedButton.icon(
+                        icon: const Icon(Icons.photo),
+                        style: ElevatedButton.styleFrom(
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0))),
+                            backgroundColor: Colors.blue[500],
+                            foregroundColor: Colors.white),
+                        onPressed: () async {
+                          pickImageFromGallery(ImageSource.gallery);
+                        },
+                        label: const Text(
+                          'Pick From Gallery',
+                        )),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -218,8 +216,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    await _saveToCSV(csvData);
-
     List<String> combinedSub = [];
 
     for (int i = 0; (i < subs.length && i < subCode.length); i++) {
@@ -230,30 +226,36 @@ class _MyHomePageState extends State<MyHomePage> {
       _isLoading = false;
     });
     textRecognizer.close();
-
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (BuildContext context) => Output(
-                name: name,
-                roll: roll,
-                crn: crn,
-                campus: campus,
-                yearPart: yearPart,
-                examType: examType,
-                level: level,
-                program: program,
-                subjects: combinedSub,
-                date: date,
-                grandTotal: grandTotal,
-                result: result)));
+    if (combinedSub.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Please select appropriate mark sheet."),
+      ));
+    } else {
+      await _saveToCSV(csvData);
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) => Output(
+                  name: name,
+                  roll: roll,
+                  crn: crn,
+                  campus: campus,
+                  yearPart: yearPart,
+                  examType: examType,
+                  level: level,
+                  program: program,
+                  subjects: combinedSub,
+                  date: date,
+                  grandTotal: grandTotal,
+                  result: result)));
+    }
   }
 
   Future<void> _saveToCSV(List<List<String>> csvData) async {
     final String csv = const ListToCsvConverter().convert(csvData);
     Directory? directory = Directory('/storage/emulated/0/Download');
     if (!(await directory.exists())) {
-      directory = await getExternalStorageDirectory(); // Fallback
+      directory = await getExternalStorageDirectory();
     }
     final path = "${directory!.path}/scanned_marksheet.csv";
     final File file = File(path);
